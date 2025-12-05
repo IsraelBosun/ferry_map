@@ -22,3 +22,8 @@ export default function RootLayout() {
     </ThemeProvider>
   );
 }
+
+
+
+
+// npx expo start --tunnel

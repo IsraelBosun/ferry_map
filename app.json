@@ -9,9 +9,17 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
+        "config": {
+        "googleMapsApiKey": "AIzaSyAPHv9c94_dp0SWnL9RyS8iw_B5w1EbINQ"
+      },
       "supportsTablet": true
     },
     "android": {
+        "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyAPHv9c94_dp0SWnL9RyS8iw_B5w1EbINQ"
+        }
+      },
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -38,7 +46,9 @@
             "backgroundColor": "#000000"
           }
         }
-      ]
+      ],
+      "expo-font",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,
