@@ -9,15 +9,15 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-        "config": {
-        "googleMapsApiKey": "AIzaSyAPHv9c94_dp0SWnL9RyS8iw_B5w1EbINQ"
+      "config": {
+        "googleMapsApiKey": "AIzaSyCrLXFnFVzNCgnv5PDCnreJuSkDAsNI0lQ"
       },
       "supportsTablet": true
     },
     "android": {
-        "config": {
+      "config": {
         "googleMaps": {
-          "apiKey": "AIzaSyAPHv9c94_dp0SWnL9RyS8iw_B5w1EbINQ"
+          "apiKey": "AIzaSyCrLXFnFVzNCgnv5PDCnreJuSkDAsNI0lQ"
         }
       },
       "adaptiveIcon": {
@@ -27,7 +27,8 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.israelbosun.map_ferry"
     },
     "web": {
       "output": "static",
@@ -53,6 +54,16 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "99156bda-6d35-4608-b8d2-4816d101f6a6"
+      }
     }
   }
 }
+
+
+
+// AIzaSyAPHv9c94_dp0SWnL9RyS8iw_B5w1EbINQ

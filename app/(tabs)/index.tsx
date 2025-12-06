@@ -12,10 +12,12 @@ import {
   ScrollView,
   Image,
   StatusBar,
+  Modal,
 } from "react-native";
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from "react-native-maps";
 import * as Location from "expo-location";
 import { SafeAreaView } from "react-native-safe-area-context";
+import FerryChatComponent from "@/components/FerryChatComponent";
 
 // Data Source URLs
 const JETTIES_URL = "https://stears-flourish-data.s3.amazonaws.com/jetties.json";
@@ -87,6 +89,8 @@ export default function App() {
   const [selectedRoute, setSelectedRoute] = useState<RouteFeature | null>(null);
   const [showLegend, setShowLegend] = useState(false);
   const [showFullSchedule, setShowFullSchedule] = useState(false);
+  const [showChat, setShowChat] = useState(false);
+
 
   const mapRef = useRef<MapView>(null);
   const slideAnim = useState(new Animated.Value(0))[0];
@@ -449,6 +453,25 @@ export default function App() {
           <Text style={styles.legendButtonText}>{showLegend ? '✕' : 'ℹ️'}</Text>
         </TouchableOpacity>
       </View>
+
+<TouchableOpacity 
+            style={styles.floatingChatButton} // New style applied here
+            onPress={() => setShowChat(true)}
+        >
+            <Text style={styles.floatingChatIcon}>💬</Text> 
+        </TouchableOpacity>
+
+        {/* Chat Modal */}
+        {showChat && (
+            <Modal 
+                visible={showChat} 
+                animationType="slide"
+                style={styles.chatModal} // Ensure it fills the screen cleanly
+                onRequestClose={() => setShowChat(false)} // Good practice for Android back button
+            >
+                <FerryChatComponent onClose={() => setShowChat(false)} />
+            </Modal> 
+        )}
 
       {/* Legend Panel */}
       {showLegend && (
@@ -1027,6 +1050,32 @@ const styles = StyleSheet.create({
     color: '#64748B',
     fontSize: 15,
     fontWeight: '600',
-
   },
+  floatingChatButton: {
+        position: 'absolute',
+        bottom: Platform.OS === 'ios' ? 40 : 25, // Adjust for iOS safe area
+        right: 20,
+        backgroundColor: '#0EA5E9',
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        justifyContent: 'center',
+        alignItems: 'center',
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.4,
+        shadowRadius: 10,
+        elevation: 12,
+        zIndex: 50, // Ensure it floats above map and details card
+    },
+    floatingChatIcon: {
+        fontSize: 28,
+        // Using '💬' emoji, so no color needed, but if you used a custom icon:
+        // color: 'white', 
+    },
+    chatModal: {
+        // Ensures the modal fully covers the screen
+        flex: 1, 
+        margin: 0, 
+    },
 });
