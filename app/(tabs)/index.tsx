@@ -18,6 +18,7 @@ import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from "react-native-maps";
 import * as Location from "expo-location";
 import { SafeAreaView } from "react-native-safe-area-context";
 import FerryChatComponent from "@/components/FerryChatComponent";
+import JettyFilterDrawer from "@/components/JettyFilterDrawer";
 
 // Data Source URLs
 const JETTIES_URL = "https://stears-flourish-data.s3.amazonaws.com/jetties.json";
@@ -91,6 +92,8 @@ export default function App() {
   const [showFullSchedule, setShowFullSchedule] = useState(false);
   const [showChat, setShowChat] = useState(false);
 
+  const [filteredJetties, setFilteredJetties] = useState<JettyFeature[]>([]);
+  const [showFilterDrawer, setShowFilterDrawer] = useState(false);
 
   const mapRef = useRef<MapView>(null);
   const slideAnim = useState(new Animated.Value(0))[0];
@@ -134,6 +137,10 @@ export default function App() {
     };
     fetchData();
   }, []);
+
+  useEffect(() => {
+    setFilteredJetties(jetties);
+  }, [jetties]);
 
   useEffect(() => {
     if (isModalVisible) {
@@ -322,7 +329,6 @@ export default function App() {
           </Text>
         </TouchableOpacity>
 
-        {/* Full Schedule Details */}
         {showFullSchedule && (
           <Animated.View
             style={[
@@ -375,7 +381,6 @@ export default function App() {
               )}
             </View>
 
-            {/* Show both operators if available */}
             {hasPublic && hasPrivate && (
               <View style={styles.scheduleDetailCard}>
                 <Text style={styles.scheduleDetailTitle}>
@@ -447,6 +452,18 @@ export default function App() {
         </View>
 
         <TouchableOpacity 
+          style={styles.filterButton}
+          onPress={() => setShowFilterDrawer(true)}
+        >
+          <Text style={styles.filterButtonText}>⚙️</Text>
+          {filteredJetties.length < jetties.length && (
+            <View style={styles.filterBadge}>
+              <Text style={styles.filterBadgeText}>{filteredJetties.length}</Text>
+            </View>
+          )}
+        </TouchableOpacity>
+
+        <TouchableOpacity 
           style={styles.legendButton}
           onPress={() => setShowLegend(!showLegend)}
         >
@@ -454,24 +471,22 @@ export default function App() {
         </TouchableOpacity>
       </SafeAreaView>
 
-<TouchableOpacity 
-            style={styles.floatingChatButton} // New style applied here
-            onPress={() => setShowChat(true)}
-        >
-            <Text style={styles.floatingChatIcon}>💬</Text> 
-        </TouchableOpacity>
+      {/* Floating Chat Button */}
+      <TouchableOpacity 
+        style={styles.floatingChatButton}
+        onPress={() => setShowChat(true)}
+      >
+        <Text style={styles.floatingChatIcon}>💬</Text> 
+      </TouchableOpacity>
 
-        {/* Chat Modal */}
-        {showChat && (
-            <Modal 
-                visible={showChat} 
-                animationType="slide"
-                style={styles.chatModal} // Ensure it fills the screen cleanly
-                onRequestClose={() => setShowChat(false)} // Good practice for Android back button
-            >
-                <FerryChatComponent onClose={() => setShowChat(false)} />
-            </Modal> 
-        )}
+      {/* Chat Modal */}
+      <Modal 
+        visible={showChat} 
+        animationType="slide"
+        onRequestClose={() => setShowChat(false)}
+      >
+        <FerryChatComponent onClose={() => setShowChat(false)} />
+      </Modal>
 
       {/* Legend Panel */}
       {showLegend && (
@@ -520,27 +535,26 @@ export default function App() {
         }}
         onPress={closeModal}
       >
-        {jetties.map((jetty, index) => (
-    <Marker
-        key={`jetty-${jetty.properties.ferry_stop_id}-${index}`}
-        coordinate={{
-          latitude: jetty.geometry.coordinates[1],
-          longitude: jetty.geometry.coordinates[0],
-        }}
-        onPress={(e) => {
-          e.stopPropagation(); // Prevent event bubbling
-          setSelectedRoute(null); // Clear route selection
-          setSelectedJetty(jetty);
-        }}
-      >
-        {/* Custom Marker using Anchor Emoji */}
-        <View style={[
-          styles.customMarker,
-          selectedJetty === jetty && styles.customMarkerSelected
-        ]}>
-          <Text style={styles.markerIcon}>⚓</Text>
-        </View>
-      </Marker>
+        {filteredJetties.map((jetty, index) => (
+          <Marker
+            key={`jetty-${jetty.properties.ferry_stop_id}-${index}`}
+            coordinate={{
+              latitude: jetty.geometry.coordinates[1],
+              longitude: jetty.geometry.coordinates[0],
+            }}
+            onPress={(e) => {
+              e.stopPropagation();
+              setSelectedRoute(null);
+              setSelectedJetty(jetty);
+            }}
+          >
+            <View style={[
+              styles.customMarker,
+              selectedJetty === jetty && styles.customMarkerSelected
+            ]}>
+              <Text style={styles.markerIcon}>⚓</Text>
+            </View>
+          </Marker>
         ))}
 
         {routes.map((route, index) => {
@@ -600,6 +614,14 @@ export default function App() {
           </View>
         </Animated.View>
       )}
+
+      {/* Filter Drawer */}
+      <JettyFilterDrawer
+        isOpen={showFilterDrawer}
+        onClose={() => setShowFilterDrawer(false)}
+        jetties={jetties}
+        onFilterChange={setFilteredJetties}
+      />
     </View>
   );
 }
@@ -664,6 +686,37 @@ const styles = StyleSheet.create({
     color: '#64748B',
     fontWeight: '500',
   },
+  filterButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#F1F5F9',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 8,
+    position: 'relative',
+  },
+  filterButtonText: {
+    fontSize: 20,
+  },
+  filterBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    backgroundColor: '#0EA5E9',
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: 'white',
+  },
+  filterBadgeText: {
+    color: 'white',
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
   legendButton: {
     width: 44,
     height: 44,
@@ -671,7 +724,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F1F5F9',
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: 12,
+    marginLeft: 8,
   },
   legendButtonText: {
     fontSize: 20,
@@ -740,23 +793,23 @@ const styles = StyleSheet.create({
     color: '#334155',
     fontWeight: '600',
   },
-customMarker: {
-  backgroundColor: 'white',
-  borderRadius: 12, // smaller
-  padding: 4,      // reduced padding
-  borderWidth: 2,
-  borderColor: '#007AFF',
-  alignItems: 'center',
-  justifyContent: 'center',
-},
-customMarkerSelected: {
-  borderColor: '#FF4500', // Highlight color when selected
-  backgroundColor: '#FFE5CC',
-},
-markerIcon: {
-  fontSize: 14, // smaller emoji size
-  lineHeight: 16, // ensures proper vertical alignment
-},
+  customMarker: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 4,
+    borderWidth: 2,
+    borderColor: '#007AFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  customMarkerSelected: {
+    borderColor: '#FF4500',
+    backgroundColor: '#FFE5CC',
+  },
+  markerIcon: {
+    fontSize: 14,
+    lineHeight: 16,
+  },
   cardContainer: {
     position: "absolute",
     bottom: 0,
@@ -1048,30 +1101,23 @@ markerIcon: {
     fontWeight: '600',
   },
   floatingChatButton: {
-        position: 'absolute',
-        bottom: Platform.OS === 'ios' ? 40 : 25, // Adjust for iOS safe area
-        right: 20,
-        backgroundColor: '#0EA5E9',
-        width: 60,
-        height: 60,
-        borderRadius: 30,
-        justifyContent: 'center',
-        alignItems: 'center',
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.4,
-        shadowRadius: 10,
-        elevation: 12,
-        zIndex: 50, // Ensure it floats above map and details card
-    },
-    floatingChatIcon: {
-        fontSize: 28,
-        // Using '💬' emoji, so no color needed, but if you used a custom icon:
-        // color: 'white', 
-    },
-    chatModal: {
-        // Ensures the modal fully covers the screen
-        flex: 1, 
-        margin: 0, 
-    },
+    position: 'absolute',
+    bottom: Platform.OS === 'ios' ? 40 : 25,
+    right: 20,
+    backgroundColor: '#0EA5E9',
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    elevation: 12,
+    zIndex: 50,
+  },
+  floatingChatIcon: {
+    fontSize: 28,
+  },
 });

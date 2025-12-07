@@ -27,7 +27,7 @@ export default function TabTwoScreen() {
           style={{
             fontFamily: Fonts.rounded,
           }}>
-          Explore
+          Exploreeee
         </ThemedText>
       </ThemedView>
       <ThemedText>This app includes example code to help you get started.</ThemedText>
@@ -112,3 +112,58 @@ const styles = StyleSheet.create({
 });
 
 
+// import React, { useRef, useMemo, useCallback } from 'react';
+// import { View, Text, Button, StyleSheet } from 'react-native';
+// import BottomSheet from '@gorhom/bottom-sheet';
+
+// export default function App() {
+//   const bottomSheetRef = useRef(null);
+
+//   // snap points
+//   const snapPoints = useMemo(() => ['25%', '50%'], []);
+
+//   // open bottom sheet
+//   const handleOpenPress = useCallback(() => {
+//     bottomSheetRef.current?.expand();
+//   }, []);
+
+//   // close bottom sheet
+//   const handleClosePress = useCallback(() => {
+//     bottomSheetRef.current?.close();
+//   }, []);
+
+//   return (
+//     <View style={styles.container}>
+//       <Button title="Open Bottom Sheet" onPress={handleOpenPress} />
+
+//       <BottomSheet
+//         ref={bottomSheetRef}
+//         index={-1} // start closed
+//         snapPoints={snapPoints}
+//       >
+//         <View style={styles.content}>
+//           <Text style={styles.title}>Hello from Bottom Sheet!</Text>
+//           <Text>Put any content here, like a list, map, or form.</Text>
+//           <Button title="Close" onPress={handleClosePress} />
+//         </View>
+//       </BottomSheet>
+//     </View>
+//   );
+// }
+
+// const styles = StyleSheet.create({
+//   container: {
+//     flex: 1,
+//     padding: 24,
+//     backgroundColor: '#f2f2f2',
+//     justifyContent: 'center',
+//   },
+//   content: {
+//     flex: 1,
+//     alignItems: 'center',
+//   },
+//   title: {
+//     fontSize: 20,
+//     marginBottom: 16,
+//   },
+// });
