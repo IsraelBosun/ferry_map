@@ -433,7 +433,7 @@ export default function App() {
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
       
       {/* Fixed Header */}
-      <View style={styles.header}>
+      <SafeAreaView style={styles.header}>
         <TouchableOpacity 
           style={styles.locationButton}
           onPress={centerToUserLocation}
@@ -441,10 +441,10 @@ export default function App() {
           <Text style={styles.locationIcon}>📍</Text>
         </TouchableOpacity>
         
-        <SafeAreaView style={styles.headerContent}>
+        <View style={styles.headerContent}>
           <Text style={styles.appTitle}>Lagos Ferry</Text>
           <Text style={styles.appSubtitle}>Water Transport Navigator</Text>
-        </SafeAreaView>
+        </View>
 
         <TouchableOpacity 
           style={styles.legendButton}
@@ -452,7 +452,7 @@ export default function App() {
         >
           <Text style={styles.legendButtonText}>{showLegend ? '✕' : 'ℹ️'}</Text>
         </TouchableOpacity>
-      </View>
+      </SafeAreaView>
 
 <TouchableOpacity 
             style={styles.floatingChatButton} // New style applied here
@@ -521,25 +521,26 @@ export default function App() {
         onPress={closeModal}
       >
         {jetties.map((jetty, index) => (
-          <Marker
-            key={`jetty-${jetty.properties.ferry_stop_id}-${index}`}
-            coordinate={{
-              latitude: jetty.geometry.coordinates[1],
-              longitude: jetty.geometry.coordinates[0],
-            }}
-            onPress={(e) => {
-              e.stopPropagation();
-              setSelectedRoute(null);
-              setSelectedJetty(jetty);
-            }}
-          >
-            <View style={[
-              styles.customMarker,
-              selectedJetty === jetty && styles.customMarkerSelected
-            ]}>
-              <Text style={styles.markerIcon}>⚓</Text>
-            </View>
-          </Marker>
+    <Marker
+        key={`jetty-${jetty.properties.ferry_stop_id}-${index}`}
+        coordinate={{
+          latitude: jetty.geometry.coordinates[1],
+          longitude: jetty.geometry.coordinates[0],
+        }}
+        onPress={(e) => {
+          e.stopPropagation(); // Prevent event bubbling
+          setSelectedRoute(null); // Clear route selection
+          setSelectedJetty(jetty);
+        }}
+      >
+        {/* Custom Marker using Anchor Emoji */}
+        <View style={[
+          styles.customMarker,
+          selectedJetty === jetty && styles.customMarkerSelected
+        ]}>
+          <Text style={styles.markerIcon}>⚓</Text>
+        </View>
+      </Marker>
         ))}
 
         {routes.map((route, index) => {
@@ -554,8 +555,8 @@ export default function App() {
                 longitude: c[0],
               }))}
               strokeColor={isPublic ? "#10B981" : "#EF4444"}
-              strokeWidth={isSelected ? 5 : 3}
-              lineDashPattern={isPublic ? undefined : [15, 10]}
+              strokeWidth={isSelected ? 4 : 1.3}
+              lineDashPattern={isPublic ? undefined : [10, 3]}
               tappable={true}
               onPress={() => {
                 setSelectedJetty(null);
@@ -739,28 +740,23 @@ const styles = StyleSheet.create({
     color: '#334155',
     fontWeight: '600',
   },
-  customMarker: {
-    backgroundColor: 'white',
-    width: 30,
-    height: 30,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 3,
-    borderColor: '#0EA5E9',
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  customMarkerSelected: {
-    borderColor: '#F59E0B',
-    transform: [{ scale: 1.2 }],
-  },
-  markerIcon: {
-    fontSize: 15,
-  },
+customMarker: {
+  backgroundColor: 'white',
+  borderRadius: 12, // smaller
+  padding: 4,      // reduced padding
+  borderWidth: 2,
+  borderColor: '#007AFF',
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+customMarkerSelected: {
+  borderColor: '#FF4500', // Highlight color when selected
+  backgroundColor: '#FFE5CC',
+},
+markerIcon: {
+  fontSize: 14, // smaller emoji size
+  lineHeight: 16, // ensures proper vertical alignment
+},
   cardContainer: {
     position: "absolute",
     bottom: 0,
