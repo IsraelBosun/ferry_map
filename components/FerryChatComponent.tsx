@@ -19,7 +19,7 @@ const JETTIES_URL = "https://stears-flourish-data.s3.amazonaws.com/jetties.json"
 const ROUTES_URL = "https://stears-flourish-data.s3.amazonaws.com/routes.json";
 
 // !! SECURITY WARNING: REMEMBER TO MOVE THIS KEY TO A SECURE BACKEND IN PRODUCTION !!
-const GOOGLE_AI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY; 
+const GOOGLE_AI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
 const GOOGLE_AI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GOOGLE_AI_API_KEY}`;
 
 interface Message {
