@@ -439,29 +439,22 @@ export default function App() {
       
       {/* Fixed Header */}
       <SafeAreaView style={styles.header}>
-        <TouchableOpacity 
+          <TouchableOpacity 
           style={styles.locationButton}
-          onPress={centerToUserLocation}
+          onPress={() => setShowFilterDrawer(true)}
         >
-          <Text style={styles.locationIcon}>📍</Text>
-        </TouchableOpacity>
+          <Text style={styles.filterButtonText}>☰</Text>
+          {filteredJetties.length < jetties.length && (
+            <View style={styles.filterBadge}>
+              <Text style={styles.filterBadgeText}>{filteredJetties.length}</Text>
+            </View>
+          )}       
+           </TouchableOpacity>
         
         <View style={styles.headerContent}>
           <Text style={styles.appTitle}>Lagos Ferry</Text>
           <Text style={styles.appSubtitle}>Water Transport Navigator</Text>
         </View>
-
-        <TouchableOpacity 
-          style={styles.filterButton}
-          onPress={() => setShowFilterDrawer(true)}
-        >
-          <Text style={styles.filterButtonText}>⚙️</Text>
-          {filteredJetties.length < jetties.length && (
-            <View style={styles.filterBadge}>
-              <Text style={styles.filterBadgeText}>{filteredJetties.length}</Text>
-            </View>
-          )}
-        </TouchableOpacity>
 
         <TouchableOpacity 
           style={styles.legendButton}
@@ -526,7 +519,7 @@ export default function App() {
         style={styles.map}
         showsUserLocation={true}
         followsUserLocation={false}
-        showsMyLocationButton={false}
+        showsMyLocationButton={true}
         initialRegion={{
           latitude: location.latitude,
           longitude: location.longitude,
@@ -731,7 +724,7 @@ const styles = StyleSheet.create({
   },
   legendPanel: {
     position: 'absolute',
-    top: Platform.OS === 'ios' ? 110 : 70,
+    top: Platform.OS === 'ios' ? 110 : 110,
     right: 16,
     backgroundColor: 'rgba(255, 255, 255, 0.98)',
     padding: 16,

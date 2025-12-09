@@ -19,7 +19,7 @@ const JETTIES_URL = "https://stears-flourish-data.s3.amazonaws.com/jetties.json"
 const ROUTES_URL = "https://stears-flourish-data.s3.amazonaws.com/routes.json";
 
 // !! SECURITY WARNING: REMEMBER TO MOVE THIS KEY TO A SECURE BACKEND IN PRODUCTION !!
-const GOOGLE_AI_API_KEY = "AIzaSyCleFD57VnHjG5ZFjmQwNjCIDnUyVZQs3g"; 
+const GOOGLE_AI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY; 
 const GOOGLE_AI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GOOGLE_AI_API_KEY}`;
 
 interface Message {
@@ -159,7 +159,7 @@ const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: numbe
 };
 
 // Find nearest jetties to user location
-const findNearestJetties = (userLocation: UserLocation, jetties: any[], count: number = 5) => {
+const findNearestJetties = (userLocation: UserLocation, jetties: any[], count: number = 3) => {
   const jettiesWithDistance = jetties.map(jetty => {
     const jettyLat = jetty.geometry.coordinates[1];
     const jettyLon = jetty.geometry.coordinates[0];
@@ -232,7 +232,7 @@ const filterDataByKeywords = (data: { jetties: any[], routes: any[] }, keywords:
     return false;
   });
 
-  const MAX_ITEMS = 15;
+  const MAX_ITEMS = 8;
   return {
     jetties: filteredJetties.slice(0, MAX_ITEMS),
     routes: filteredRoutes.slice(0, MAX_ITEMS),
@@ -436,7 +436,7 @@ When answering questions:
 4. Mention operating hours and schedules.
 5. Suggest alternatives when relevant.
 6. Keep responses concise but informative.
-7. Use emojis to make responses friendly (⚓, 🚢, 💰, ⏰, 📍, etc.)
+7. Use emojis SPARINGLY (max 3 total per response) to make responses friendly (⚓, 🚢, 💰, ⏰, 📍, etc.).
 8. If you provide an external link, use the Markdown format: [Link Text](URL).
 
 User question: ${currentInput}`;
@@ -457,7 +457,7 @@ User question: ${currentInput}`;
             },
           ],
           generationConfig: {
-            temperature: 0.7,
+            temperature: 0.5,
             topK: 40,
             topP: 0.95,
             maxOutputTokens: 1024,

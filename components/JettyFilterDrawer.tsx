@@ -37,6 +37,13 @@ interface JettyFilterDrawerProps {
   onFilterChange: (filteredJetties: JettyFeature[]) => void;
 }
 
+// Define the default LGAs to be selected
+const DEFAULT_SELECTED_LGAS = [
+  "Lagos Island",
+  "Eti-Osa",
+  "Ikorodu",
+];
+
 const JettyFilterDrawer: React.FC<JettyFilterDrawerProps> = ({
   isOpen,
   onClose,
@@ -51,7 +58,9 @@ const JettyFilterDrawer: React.FC<JettyFilterDrawerProps> = ({
   const charterOptions = ["Yes", "No"];
 
   // Filter state
-  const [selectedLGAs, setSelectedLGAs] = useState<string[]>([...uniqueLGAs]);
+  const [selectedLGAs, setSelectedLGAs] = useState<string[]>(
+    DEFAULT_SELECTED_LGAS
+  );
   const [selectedCharterServices, setSelectedCharterServices] = useState<string[]>([
     ...charterOptions,
   ]);
@@ -131,15 +140,26 @@ const JettyFilterDrawer: React.FC<JettyFilterDrawerProps> = ({
   };
 
   const resetFilters = () => {
-    setSelectedLGAs([...uniqueLGAs]);
+    setSelectedLGAs(DEFAULT_SELECTED_LGAS);
     setSelectedCharterServices([...charterOptions]);
   };
 
+  // MODIFICATION 1: Update getFilterCount to count selected options (Jetties)
   const getFilterCount = () => {
-    const totalFilters = uniqueLGAs.length + charterOptions.length;
-    const activeFilters = selectedLGAs.length + selectedCharterServices.length;
-    return activeFilters === totalFilters ? 0 : totalFilters - activeFilters;
+    const filteredJetties = jetties.filter((jetty) => {
+        const lgaMatch = selectedLGAs.includes(jetty.properties.LGA);
+        const charterMatch = selectedCharterServices.includes(
+          jetty.properties.charter_services
+        );
+        return lgaMatch && charterMatch;
+      });
+    return filteredJetties.length;
   };
+  
+  // Helper to determine if ALL filters are selected (used for displaying 'All')
+  const areAllOptionsSelected = 
+    selectedLGAs.length === uniqueLGAs.length && 
+    selectedCharterServices.length === charterOptions.length;
 
   if (!isOpen) return null;
 
@@ -173,8 +193,9 @@ const JettyFilterDrawer: React.FC<JettyFilterDrawerProps> = ({
         <SafeAreaView style={styles.drawerHeader}>
           <View>
             <Text style={styles.drawerTitle}>Filter Jetties</Text>
+            {/* MODIFICATION 2: Update the subtitle display */}
             <Text style={styles.drawerSubtitle}>
-              {jetties.length} total • {selectedLGAs.length + selectedCharterServices.length - uniqueLGAs.length - charterOptions.length === 0 ? 'All' : getFilterCount() + ' filtered'}
+              {jetties.length} total • {areAllOptionsSelected ? 'All' : getFilterCount() + ' selected'}
             </Text>
           </View>
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
@@ -190,7 +211,7 @@ const JettyFilterDrawer: React.FC<JettyFilterDrawerProps> = ({
           {/* LGA Filter Section */}
           <View style={styles.filterSection}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>📍 Local Government Area</Text>
+              <Text style={styles.sectionTitle}>📍 LGA</Text>
               <TouchableOpacity onPress={selectAllLGAs}>
                 <Text style={styles.selectAllText}>
                   {selectedLGAs.length === uniqueLGAs.length ? "Deselect All" : "Select All"}
