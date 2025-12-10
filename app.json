@@ -22,8 +22,8 @@
       },
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/back.png",
-        "backgroundImage": "./assets/images/yatchh.png",
+        "foregroundImage": "./assets/images/icon.png",
+        "backgroundImage": "./assets/images/back.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
