@@ -424,12 +424,17 @@ export default function App() {
 
   if (loading || !location) {
     return (
-      <View style={styles.loader}>
-        <View style={styles.loadingCard}>
-          <ActivityIndicator size="large" color="#0EA5E9" />
-          <Text style={styles.loadingText}>Loading Lagos Ferry Network...</Text>
-        </View>
-      </View>
+      // <View style={styles.loader}>
+      //   <View style={styles.loadingCard}>
+      //     <ActivityIndicator size="large" color="#0EA5E9" />
+      //     <Text style={styles.loadingText}>Loading Lagos Ferry Network...</Text>
+      //   </View>
+      // </View>
+      <View style={styles.minimalLoader}>
+      <ActivityIndicator size="large" color="#0EA5E9" />
+      <Text style={styles.minimalLoadingText}>Loading Lagos Ferry Network...</Text>
+      <Text style={styles.minimalLoadingSubText}>Preparing map data and location services...</Text>
+    </View>
     );
   }
 
@@ -1112,5 +1117,23 @@ const styles = StyleSheet.create({
   },
   floatingChatIcon: {
     fontSize: 28,
+  },
+  minimalLoader: { 
+    flex: 1, 
+    justifyContent: "center", 
+    alignItems: "center",
+    backgroundColor: 'white', // Clean, minimalistic white background
+  },
+  minimalLoadingText: {
+    marginTop: 15,
+    fontSize: 18, // Slightly larger title
+    color: '#1E293B', // Dark, modern text
+    fontWeight: '700',
+  },
+  minimalLoadingSubText: {
+    marginTop: 5,
+    fontSize: 14,
+    color: '#64748B', // Subdued subtitle text
+    fontWeight: '500',
   },
 });

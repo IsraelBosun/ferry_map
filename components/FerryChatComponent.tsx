@@ -13,15 +13,17 @@ import {
   Alert,
 } from "react-native";
 import * as Location from "expo-location";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+
+const BACKEND_URL = "https://gemini-backend-g2ly.onrender.com"; // Replace with your actual backend URL or IP
 
 // Data Source URLs
 const JETTIES_URL = "https://stears-flourish-data.s3.amazonaws.com/jetties.json";
 const ROUTES_URL = "https://stears-flourish-data.s3.amazonaws.com/routes.json";
 
-// !! SECURITY WARNING: REMEMBER TO MOVE THIS KEY TO A SECURE BACKEND IN PRODUCTION !!
-const GOOGLE_AI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
-const GOOGLE_AI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GOOGLE_AI_API_KEY}`;
 
+// --- INTERFACE DEFINITIONS (Unchanged) ---
 interface Message {
   id: string;
   text: string;
@@ -39,7 +41,7 @@ interface UserLocation {
   longitude: number;
 }
 
-// --- UTILITY FUNCTIONS ---
+// --- UTILITY FUNCTIONS (Unchanged) ---
 
 const BOLD_REGEX = /\*\*([^\*]+)\*\*/g;
 const LINK_REGEX = /\[([^\]]+)\]\(([^)]+)\)/g;
@@ -291,6 +293,8 @@ export default function FerryChatComponent({ onClose }: ChatComponentProps) {
     loadFerryData();
   }, []);
 
+
+
   // Request location permission
   const requestLocationPermission = async (): Promise<boolean> => {
     try {
@@ -317,27 +321,17 @@ export default function FerryChatComponent({ onClose }: ChatComponentProps) {
     }
   };
 
-  const handleNearestJettyQuery = async () => {
-    // Check if we have location permission
-    let hasLocation = locationPermissionGranted && userLocation;
-    
-    if (!hasLocation) {
-      // Add system message requesting permission
-      const permissionMessage: Message = {
-        id: Date.now().toString(),
-        text: "📍 To find the nearest jetty, I need access to your location. Please allow location access.",
-        isUser: false,
-        timestamp: new Date(),
-        isSystemMessage: true,
-      };
-      setMessages((prev) => [...prev, permissionMessage]);
-
-      // Request permission
-      const granted = await requestLocationPermission();
-      if (!granted) {
+const handleNearestJettyQuery = async () => {
+  let currentLocation = userLocation;
+  
+  if (!locationPermissionGranted || !currentLocation) {
+    // Request permission WITHOUT showing the "I need access" message yet
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
         const errorMessage: Message = {
-          id: (Date.now() + 1).toString(),
-          text: "❌ I couldn't access your location. Please enable location services and try again.",
+          id: Date.now().toString(),
+          text: "❌ I need access to your location to find the nearest jetty. Please enable location services and try again.",
           isUser: false,
           timestamp: new Date(),
         };
@@ -345,18 +339,41 @@ export default function FerryChatComponent({ onClose }: ChatComponentProps) {
         return null;
       }
       
-      hasLocation = true;
-    }
-
-    if (!ferryData || !userLocation) {
+      // Get location directly
+      const location = await Location.getCurrentPositionAsync({});
+      currentLocation = {
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      };
+      
+      // Update state for future use
+      setLocationPermissionGranted(true);
+      setUserLocation(currentLocation);
+      
+      // DON'T add any intermediate messages - just continue with the query
+      
+    } catch (error) {
+      console.error("Error requesting location:", error);
+      const errorMessage: Message = {
+        id: Date.now().toString(),
+        text: "❌ I couldn't access your location. Please enable location services and try again.",
+        isUser: false,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
       return null;
     }
+  }
 
-    // Find nearest jetties
-    const nearestJetties = findNearestJetties(userLocation, ferryData.jetties, 5);
-    
-    return nearestJetties;
-  };
+  if (!ferryData || !currentLocation) {
+    return null;
+  }
+
+  // Find nearest jetties using the current location
+  const nearestJetties = findNearestJetties(currentLocation, ferryData.jetties, 5);
+  
+  return nearestJetties;
+};
 
   const sendMessage = async () => {
     if (!inputText.trim() || loading || !ferryData) return;
@@ -405,7 +422,7 @@ export default function FerryChatComponent({ onClose }: ChatComponentProps) {
           : `(Filtered: ${filteredData.jetties.length} Jetties, ${filteredData.routes.length} Routes relevant to "${keywords.join(', ')}")`;
       }
 
-      // Create context for AI
+      // Create context for AI (UNCHANGED, as you pass the context to your backend)
       const context = `You are a helpful assistant for the Lagos Ferry system in Nigeria. Answer the user's question accurately using ONLY the data provided below. Do not mention that the data is filtered.
 
 --- FERRY DATA CONTEXT ${dataLabel} ---
@@ -441,39 +458,29 @@ When answering questions:
 
 User question: ${currentInput}`;
 
-      const response = await fetch(GOOGLE_AI_URL, {
+      // 💡 REFACTORED: Call your backend /gemini endpoint instead of the Google AI URL
+      const response = await fetch(`${BACKEND_URL}/gemini`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
+        // The backend expects the 'prompt' field in the body
         body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                {
-                  text: context,
-                },
-              ],
-            },
-          ],
-          generationConfig: {
-            temperature: 0.5,
-            topK: 40,
-            topP: 0.95,
-            maxOutputTokens: 1024,
-          },
+          prompt: context, // Sending the full context as the prompt
         }),
       });
 
       const data = await response.json();
       
+      // The backend now returns { text: generatedText } OR { error: '...', details: '...' }
       if (data.error) {
-        console.error("Gemini API Error:", data.error);
-        const errorMessage = data.error.message || "An unknown API error occurred.";
-        throw new Error(`Gemini API Error: ${errorMessage}`);
+        console.error("Backend Error:", data.details);
+        const errorMessage = data.details || "An unknown backend error occurred.";
+        throw new Error(`Ferry Backend Error: ${errorMessage}`);
       }
 
-      const aiResponseText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      // Assuming your backend returns the final response text in a 'text' field
+      const aiResponseText = data.text; 
 
       if (aiResponseText) {
         const aiMessage: Message = {
@@ -483,12 +490,9 @@ User question: ${currentInput}`;
           timestamp: new Date(),
         };
         setMessages((prev) => [...prev, aiMessage]);
-      } else if (data.candidates?.[0]?.finishReason === "SAFETY") {
-        throw new Error("AI response was blocked due to safety settings.");
       } else {
-        console.warn("Unexpected API Response Structure:", data);
-        const finishReason = data.candidates?.[0]?.finishReason;
-        throw new Error(`Invalid or incomplete response from AI. Finish Reason: ${finishReason || 'Unknown'}.`);
+        console.warn("Unexpected Backend Response Structure:", data);
+        throw new Error(`Invalid or incomplete response from backend.`);
       }
 
     } catch (error) {
@@ -504,7 +508,7 @@ User question: ${currentInput}`;
       setLoading(false);
     }
   };
-
+// --- Rest of the component (Unchanged UI/Logic) ---
   useEffect(() => {
     scrollViewRef.current?.scrollToEnd({ animated: true });
   }, [messages]);
@@ -534,7 +538,7 @@ User question: ${currentInput}`;
       keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
     >
       {/* Header */}
-      <View style={styles.header}>
+      <SafeAreaView style={styles.header}>
         <View style={styles.headerContent}>
           <Text style={styles.headerTitle}>🚢 Ferry Assistant</Text>
           <Text style={styles.headerSubtitle}>
@@ -545,7 +549,7 @@ User question: ${currentInput}`;
         <TouchableOpacity style={styles.closeButton} onPress={onClose}>
           <Text style={styles.closeButtonText}>✕</Text>
         </TouchableOpacity>
-      </View>
+      </SafeAreaView>
 
       {/* Quick Actions */}
       <View style={styles.quickActions}>
