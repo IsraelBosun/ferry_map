@@ -558,15 +558,15 @@ User question: ${currentInput}`;
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.quickActionButton}
-            onPress={() => setInputText("Show me routes from CMS")}
+            onPress={() => setInputText("Which Ferry route is the most expensive?")}
           >
-            <Text style={styles.quickActionText}>🗺️ Routes from CMS</Text>
+            <Text style={styles.quickActionText}>💰 Most Expensive Route</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.quickActionButton}
-            onPress={() => setInputText("How much is the fare?")}
+            onPress={() => setInputText("What are the typical operating hours?")}
           >
-            <Text style={styles.quickActionText}>💰 Fares</Text>
+            <Text style={styles.quickActionText}>🗺️ Operating Hours</Text>
           </TouchableOpacity>
         </ScrollView>
       </View>
